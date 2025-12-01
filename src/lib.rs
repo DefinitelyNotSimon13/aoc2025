@@ -27,14 +27,8 @@ pub struct Example {
     pub expected2: Option<String>,
 }
 
-pub fn run_day<F1, F2>(
-    day: u8,
-    title: &str,
-    description: &str,
-    example: Option<Example>,
-    part1: F1,
-    part2: F2,
-) where
+pub fn run_day<F1, F2>(day: u8, title: &str, example: Option<Example>, part1: F1, part2: F2)
+where
     F1: Fn(&str) -> AoCResult,
     F2: Fn(&str) -> AoCResult,
 {
@@ -43,19 +37,14 @@ pub fn run_day<F1, F2>(
     let header = format!(
         "{} {} {}",
         // EMOJIS IM CODE :O
-        style("🎄 Advent of Code 2025").green().bold(),
+        style("\n🎄 Advent of Code 2025").green().bold(),
         style("—").dim(),
         style(format!("Day {:02}: {}", day, title)).cyan().bold()
     );
 
-    let url = format!("https://adventofcode.com/2025/day/{}", day);
     let separator = style("─".repeat(header.len().min(80))).dim().to_string();
 
-    let desc_title = style("❄️ Description").yellow().bold();
-    let link_title = style("🔗 Puzzle").blue().bold();
-
-    let header_text =
-        format!("{header}\n{separator}\n{desc_title}\n{description}\n\n{link_title}\n{url}\n",);
+    let header_text = format!("{header}\n{separator}\n",);
     let _ = term.write_line(&header_text);
 
     let example_path = format!("inputs/day{:02}_example.txt", day);
@@ -85,14 +74,14 @@ pub fn run_day<F1, F2>(
         .unwrap_or_else(|| panic!("Could not read real input file `{input_path}`"));
 
     if let Some(ref ex) = example {
-        let _ = term.write_line(&style(format!("> {} — Part 1", ex.label)).bold().to_string());
+        let _ = term.write_line(&style(format!("> {} - Part 1", ex.label)).bold().to_string());
         let (res, t) = timed(&part1, &ex.input);
         print_result(&term, "Example Part 1", &res, ex.expected1.clone(), t);
         let _ = term.write_line("");
     }
 
     let _ = term.write_line(
-        &style(format!("> Running Part 1 on real input: {input_path}"))
+        &style(format!("> Part 1 with input: {input_path}"))
             .bold()
             .to_string(),
     );
@@ -101,21 +90,25 @@ pub fn run_day<F1, F2>(
     let _ = term.write_line("");
 
     if let Some(ref ex) = example {
-        let _ = term.write_line(&style(format!("> {} — Part 2", ex.label)).bold().to_string());
+        let _ = term.write_line(&style(format!("> {} - Part 2", ex.label)).bold().to_string());
         let (res, t) = timed(&part2, &ex.input);
         print_result(&term, "Example Part 2", &res, ex.expected2.clone(), t);
         let _ = term.write_line("");
     }
 
     let _ = term.write_line(
-        &style(format!("> Running Part 2 on real input: {input_path}"))
+        &style(format!("> Part 2 with input: {input_path}"))
             .bold()
             .to_string(),
     );
     let (ans2, t2) = timed(&part2, &input);
     print_result(&term, "Part 2", &ans2, None, t2);
 
-    let _ = term.write_line(&style("Good luck & merry coding! 🎁").magenta().to_string());
+    let _ = term.write_line(
+        &style("\nGood luck & merry coding! 🎁")
+            .magenta()
+            .to_string(),
+    );
 }
 
 pub fn run_example_literal<F1, F2, E1, E2>(
@@ -212,17 +205,15 @@ macro_rules! aoc_day {
     (
         $day:literal,
         $title:expr,
-        $description:expr
     ) => {
         fn main() {
-            aoc2025::run_day($day, $title, $description, None, crate::part1, crate::part2);
+            aoc2025::run_day($day, $title, None, crate::part1, crate::part2);
         }
     };
 
     (
         $day:literal,
         $title:expr,
-        $description:expr;
         example = {
             label: $label:expr,
             input: $input:expr,
@@ -238,14 +229,7 @@ macro_rules! aoc_day {
                 expected2: $expected2.map(|e| e.to_string()),
             };
 
-            aoc2025::run_day(
-                $day,
-                $title,
-                $description,
-                Some(example),
-                crate::part1,
-                crate::part2,
-            );
+            aoc2025::run_day($day, $title, Some(example), crate::part1, crate::part2);
         }
     };
 }

@@ -1,4 +1,4 @@
-use aoc2025::{AoCError, AoCResult, aoc_day};
+use aoc2025::{AoCResult, aoc_day};
 use regex::Regex;
 
 const EXAMPLE_INPUT: &str = "\
@@ -96,13 +96,11 @@ fn part2(input: &str) -> AoCResult {
     Ok(zero_hits.to_string())
 }
 
-// Use the extended macro form with `example = { ... }`:
 aoc_day!(
     1,
-    "Day 01",
-    "Description";
+    "Secret Entrance",
     example = {
-        label: "Example from problem statement",
+        label: "Example",
         input: EXAMPLE_INPUT,
         expected1: Some(3),
         expected2: Some(6),
