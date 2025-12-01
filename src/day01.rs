@@ -12,7 +12,6 @@ L1
 L99
 R14
 L82
-R100
 ";
 
 fn part1(input: &str) -> AoCResult {
@@ -73,39 +72,24 @@ fn part2(input: &str) -> AoCResult {
                 _ => panic!("unexpected direction: {dir}"),
             };
 
-            let actual_rotation = total_rotation % 100;
-            let additional_passes = ((total_rotation - actual_rotation) / 100).abs();
-            let before = zero_hits;
-
-            println!("------------");
-            println!("Starting from {current_position} and rotating {total_rotation}");
-            println!(
-                "In practice rotating by {actual_rotation} with {additional_passes} additional passes"
-            );
-
-            println!("------------");
-
-            let theoretical_position = current_position + actual_rotation;
-            let actual_position = if theoretical_position > 100 {
-                theoretical_position % 100
-            } else if theoretical_position == 100 {
-                0
-            } else if theoretical_position < 0 {
-                100 - theoretical_position
-            } else {
-                theoretical_position
-            };
-            println!("Would theoretically rotate to {theoretical_position}");
-            println!("Actually rotating to {actual_position}");
-
-            println!("---- Summary ----");
-            let total = zero_hits - before;
-            println!(
-                "Rotated by {total_rotation} from {current_position} to {actual_position} and made {total} hits"
-            );
-
-            println!("");
-            current_position = actual_position;
+            // IT HURTS SOOO MUCH :(
+            for i in 0..total_rotation.abs() {
+                if total_rotation > 0 {
+                    current_position += 1;
+                    if current_position == 100 {
+                        zero_hits += 1;
+                        current_position = 0;
+                    }
+                } else {
+                    current_position -= 1;
+                    if current_position == 0 {
+                        zero_hits += 1;
+                    }
+                    if current_position == -1 {
+                        current_position = 99;
+                    }
+                }
+            }
         }
     }
 
@@ -121,6 +105,6 @@ aoc_day!(
         label: "Example from problem statement",
         input: EXAMPLE_INPUT,
         expected1: Some(3),
-        expected2: Some(7),
+        expected2: Some(6),
     }
 );
