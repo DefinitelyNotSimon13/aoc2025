@@ -1,9 +1,12 @@
+#![deny(clippy::pedantic)]
+#![allow(clippy::missing_panics_doc)]
 use console::{Term, style};
+use std::fmt::Debug;
 use std::fs;
 use std::time::{Duration, Instant};
 use thiserror::Error;
 
-pub type AoCResult = Result<String, AoCError>;
+pub type AoCResult<T> = Result<T, AoCError>;
 
 #[derive(Debug, Error)]
 pub enum AoCError {
@@ -20,17 +23,18 @@ impl AoCError {
     }
 }
 
-pub struct Example {
+pub struct Example<T: Debug> {
     pub label: String,
     pub input: String,
-    pub expected1: Option<String>,
-    pub expected2: Option<String>,
+    pub expected1: Option<T>,
+    pub expected2: Option<T>,
 }
 
-pub fn run_day<F1, F2>(day: u8, title: &str, example: Option<Example>, part1: F1, part2: F2)
+pub fn run_day<F1, F2, T>(day: u8, title: &str, example: Option<Example<T>>, part1: F1, part2: F2)
 where
-    F1: Fn(&str) -> AoCResult,
-    F2: Fn(&str) -> AoCResult,
+    F1: Fn(&str) -> AoCResult<T>,
+    F2: Fn(&str) -> AoCResult<T>,
+    T: Debug + Clone + PartialEq,
 {
     let term = Term::stdout();
 
@@ -111,18 +115,17 @@ where
     );
 }
 
-pub fn run_example_literal<F1, F2, E1, E2>(
+pub fn run_example_literal<F1, F2, T>(
     label: &str,
     input: &str,
-    expected1: Option<E1>,
-    expected2: Option<E2>,
+    expected1: Option<T>,
+    expected2: Option<T>,
     part1: F1,
     part2: F2,
 ) where
-    F1: Fn(&str) -> AoCResult,
-    F2: Fn(&str) -> AoCResult,
-    E1: ToString,
-    E2: ToString,
+    F1: Fn(&str) -> AoCResult<T>,
+    F2: Fn(&str) -> AoCResult<T>,
+    T: Debug + PartialEq,
 {
     let term = Term::stdout();
     let _ = term.write_line(&style(format!("> {label}")).bold().to_string());
@@ -130,29 +133,26 @@ pub fn run_example_literal<F1, F2, E1, E2>(
     let (res1, t1) = timed(&part1, input);
     let (res2, t2) = timed(&part2, input);
 
-    let exp1_str = expected1.map(|e| e.to_string());
-    let exp2_str = expected2.map(|e| e.to_string());
-
-    print_result(&term, "Example Part 1", &res1, exp1_str, t1);
-    print_result(&term, "Example Part 2", &res2, exp2_str, t2);
+    print_result(&term, "Example Part 1", &res1, expected1, t1);
+    print_result(&term, "Example Part 2", &res2, expected2, t2);
 
     let _ = term.write_line("");
 }
 
-fn timed<F>(f: &F, input: &str) -> (AoCResult, Duration)
+fn timed<F, T: Debug>(f: &F, input: &str) -> (AoCResult<T>, Duration)
 where
-    F: Fn(&str) -> AoCResult,
+    F: Fn(&str) -> AoCResult<T>,
 {
     let start = Instant::now();
     let result = f(input);
     (result, start.elapsed())
 }
 
-fn print_result(
+fn print_result<T: Debug + PartialEq>(
     term: &Term,
     label: &str,
-    result: &AoCResult,
-    expected: Option<String>,
+    result: &AoCResult<T>,
+    expected: Option<T>,
     dur: Duration,
 ) {
     let time_str = format!("{:.3?}", dur);
@@ -160,14 +160,14 @@ fn print_result(
     let line = match result {
         Ok(got) => match expected {
             Some(ref exp) if exp == got => format!(
-                "{} {} {} ({})",
+                "{} {} {:#?} ({})",
                 style(label).green().bold(),
                 style("✓").green(),
                 style(got).bold(),
                 style(time_str).dim(),
             ),
             Some(ref exp) => format!(
-                "{} {} got={} expected={} ({})",
+                "{} {} got={:#?} expected={:#?} ({})",
                 style(label).red().bold(),
                 style("✗").red(),
                 style(got).bold(),
@@ -175,7 +175,7 @@ fn print_result(
                 style(time_str).dim(),
             ),
             None => format!(
-                "{} {} ({})",
+                "{} {:#?} ({})",
                 style(label).cyan().bold(),
                 style(got).bold(),
                 style(time_str).dim(),
@@ -225,11 +225,15 @@ macro_rules! aoc_day {
             let example = aoc2025::Example {
                 label: $label.to_string(),
                 input: $input.to_string(),
-                expected1: $expected1.map(|e| e.to_string()),
-                expected2: $expected2.map(|e| e.to_string()),
+                expected1: $expected1,
+                expected2: $expected2,
             };
 
             aoc2025::run_day($day, $title, Some(example), crate::part1, crate::part2);
         }
     };
+}
+
+pub fn input_lines(input: &str) -> impl Iterator<Item = &str> {
+    input.lines().filter(|l| !l.trim().is_empty())
 }

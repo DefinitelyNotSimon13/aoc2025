@@ -1,3 +1,4 @@
+#![deny(clippy::pedantic)]
 use aoc2025::{AoCResult, aoc_day};
 use regex::Regex;
 
@@ -14,7 +15,7 @@ R14
 L82
 ";
 
-fn part1(input: &str) -> AoCResult {
+fn part1(input: &str) -> AoCResult<i32> {
     let steps = input.lines().filter(|l| !l.trim().is_empty());
 
     let re = Regex::new(r"^([LR])(\d+)$").expect("create regex");
@@ -45,10 +46,10 @@ fn part1(input: &str) -> AoCResult {
         }
     }
 
-    Ok(zero_hits.to_string())
+    Ok(zero_hits)
 }
 
-fn part2(input: &str) -> AoCResult {
+fn part2(input: &str) -> AoCResult<i32> {
     let steps = input.lines().filter(|l| !l.trim().is_empty());
 
     let re = Regex::new(r"^([LR])(\d+)$").expect("create regex");
@@ -73,7 +74,7 @@ fn part2(input: &str) -> AoCResult {
             };
 
             // IT HURTS SOOO MUCH :(
-            for i in 0..total_rotation.abs() {
+            for _ in 0..total_rotation.abs() {
                 if total_rotation > 0 {
                     current_position += 1;
                     if current_position == 100 {
@@ -93,7 +94,7 @@ fn part2(input: &str) -> AoCResult {
         }
     }
 
-    Ok(zero_hits.to_string())
+    Ok(zero_hits)
 }
 
 aoc_day!(
